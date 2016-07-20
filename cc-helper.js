@@ -13,7 +13,8 @@
       },
       luhnValidation      : true,
       invalidFieldClass   : 'cch-invalid-number',
-      modifyOnSubmit      : false, 
+      modifyOnSubmit      : false,
+      removePatternAttr   : false,
       preventSubmitIf     : {
         incompleteCardNum : true,
         incompleteCVC     : true,
@@ -22,12 +23,22 @@
     };
     var opts = $.extend( {}, defaultOptions, userOptions );
 
+    // Remove pattern attribute if specified (default: false)
+    removePatternAttr(opts);
+
     // Setup event listeners for fields requiring formatting and/or validation
     setListenerCardNum(opts);
     setListenerCardCVC(opts);
     setListenerFormSubmit(opts);
 
   };
+
+  // Remove pattern attribute if specified (default: false)
+  function removePatternAttr(opts) {
+    if (!opts.removePatternAttr) return;
+    $(opts.selectors.inputCVC).removeAttr('pattern');
+    $(opts.selectors.inputNumber).removeAttr('pattern');
+  }
 
   function setListenerFormSubmit (opts) {
     // check opts for prevent submit options
