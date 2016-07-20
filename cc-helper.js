@@ -1,15 +1,21 @@
 (function($){
 
-  var clonedFieldName = 'cch_cc_num_clone';
+  // Used as field names
+  var clonedFieldName        = 'cch_cc_num_clone';
+  // Used as IDs
+  var errMsgDisplayContainer = 'cch-err-msg-container';
+  var errMsgNumber           = 'cch-err-num';
+  var errMsgCVC              = 'cch-err-cvc';
 
   // Declaring global
   CardHelper = function (userOptions) {
 
     var defaultOptions = {
       selectors : {
-        form        : '#card-helper',
-        inputNumber : 'input[name="card-number"]',
-        inputCVC    : 'input[name="card-cvc"]'
+        form          : '#card-helper',
+        inputNumber   : 'input[name="card-number"]',
+        inputCVC      : 'input[name="card-cvc"]',
+        errMsgDisplay : '#card-helper'
       },
       luhnValidation      : true,
       invalidFieldClass   : 'cch-invalid-number',
@@ -26,12 +32,32 @@
     // Remove pattern attribute if specified (default: false)
     removePatternAttr(opts);
 
+    // Setup hidden error message display container and individual error message elements for later display
+    createErrMsgDisplay(opts);
+
     // Setup event listeners for fields requiring formatting and/or validation
     setListenerCardNum(opts);
     setListenerCardCVC(opts);
     setListenerFormSubmit(opts);
 
   };
+
+  // Create hidden error message display container and individual error message elements.
+  // Elsewhere, toggle visibility of these messages when error conditions are detected.
+  function createErrMsgDisplay(opts) {
+    if (!opts.selectors.errMsgDisplay) return;
+
+    // TODO: throw error if ids exist, or use a class
+    var hidden = ' style="display:none;"';
+    var errMsgHTML = 
+      ['<div id="'+ errMsgDisplayContainer +'"'+ hidden + '>',
+         '<span id="'+ errMsgNumber           +'"'+ hidden + '>Invalid credit card number</span>',
+         '<span id="'+ errMsgCVC              +'"'+ hidden + '>Invalid CVC</span>',
+       '</div>',
+      ].join('\n');
+                        
+    $(opts.selectors.errMsgDisplay).prepend( $(errMsgHTML) );
+  }
 
   // Remove pattern attribute if specified (default: false)
   function removePatternAttr(opts) {
@@ -59,13 +85,13 @@
 
       var o = opts.preventSubmitIf;
       // If any preventSubmit options are enabled, and the corresponding check
-      // fails, cancel submission
+      // fails, cancel submission, and display the appropriate error message
       if ( o.incompleteCardNum && !isCompleteCardNum(cardNum)     ) {
-        $cardNumInputEl.addClass(opts.invalidFieldClass);
+        displayErr( $cardNumInputEl, $('#'+errMsgNumber), opts );
         return cancelEvent(e);
       }
       if ( o.incompleteCVC     && !isCompleteCVC(cardNum,cardCVC) ) {
-        $cardCVCInputEl.addClass(opts.invalidFieldClass);
+        displayErr( $cardCVCInputEl, $('#'+errMsgCVC), opts );
         return cancelEvent(e);
       }
       if ( o.failedLuhn        && !isValidLuhn(cardNum)           ) return cancelEvent(e);
@@ -105,7 +131,7 @@
       } else {
         prevVal = currentVal;
         // TODO: perform this operation only if class is present
-        $(e.target).removeClass(opts.invalidFieldClass);
+        hideErr($(e.target),$('#'+errMsgCVC), opts);
       }
 
 
@@ -178,7 +204,7 @@
         prevVal = e.target.value = currentValFormatted;
         this.setSelectionRange(cursorPosition,cursorPosition); // Re-position cursor appropriately
         // TODO: perform this operation only if class is present
-        $(e.target).removeClass(opts.invalidFieldClass);
+        hideErr( $(e.target), $('#'+errMsgNumber), opts );
       }
 
 
@@ -206,7 +232,7 @@
         // If of complete length and failed Luhn
         if ( currentVal.length === maxLength && !isValidLuhn(currentVal) ) {
           failedLuhnChk = true;
-          $(e.target).addClass(opts.invalidFieldClass);
+          displayErr( $(e.target), $('#'+errMsgNumber), opts );
           opts.onValidityChange && opts.onValidityChange(false); // pass false, signifying invalid Luhn input
         }
 
@@ -215,9 +241,9 @@
         // In either case, cannot be invalid Luhn.
         // So, if also previously failedLuhnChk, remove failing class and call card validity change callback.
         else if ( failedLuhnChk && currentVal.length <= maxLength ) {
-          $(e.target).removeClass(opts.invalidFieldClass);
-          opts.onValidityChange && opts.onValidityChange(true); // pass true, signifying valid or incomplete Luhn input
           failedLuhnChk = false;
+          hideErr( $(e.target), $('#'+errMsgNumber), opts );
+          opts.onValidityChange && opts.onValidityChange(true); // pass true, signifying valid or incomplete Luhn input
         }
 
 
@@ -270,6 +296,16 @@
     cardNum += ''; // Coerce to string
     cardNum = cardNum.replace(/ /g,''); // Remove any spaces
     return luhnChk(cardNum);
+  }
+  function displayErr ($fieldWithErr, $errMsg, opts) {
+    $('#'+errMsgDisplayContainer).show();
+    $errMsg.show();
+    $fieldWithErr.addClass(opts.invalidFieldClass);
+  }
+  function hideErr ($correctedField, $errMsgToHide, opts) {
+    $('#'+errMsgDisplayContainer).hide();
+    $errMsgToHide.hide();
+    $correctedField.removeClass(opts.invalidFieldClass);
   }
 
 
