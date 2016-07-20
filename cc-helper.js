@@ -40,31 +40,37 @@
     $(opts.selectors.inputNumber).removeAttr('pattern');
   }
 
+  function cancelEvent(e) {
+    e.preventDefault();
+    e.stopImmediatePropogation();
+    return false;
+  }
+
   function setListenerFormSubmit (opts) {
     // check opts for prevent submit options
-    $(opts.selectors.form).on('submit', evtHandlerFormSubmit);
+    $('body').on('submit', opts.selectors.form, evtHandlerFormSubmit);
 
     function evtHandlerFormSubmit (e) {
       var $cardNumInputEl = opts.modifyOnSubmit ? $('[name="'+clonedFieldName+'"]') : $(opts.selectors.inputNumber);
       var cardNum = $cardNumInputEl[0].value;
-      
+
       var $cardCVCInputEl = $(opts.selectors.inputCVC);
       var cardCVC = $cardCVCInputEl[0].value;
-      
+
       var o = opts.preventSubmitIf;
       // If any preventSubmit options are enabled, and the corresponding check
       // fails, cancel submission
       if ( o.incompleteCardNum && !isCompleteCardNum(cardNum)     ) {
         $cardNumInputEl.addClass(opts.invalidFieldClass);
-        return false;
+        return cancelEvent(e);
       }
       if ( o.incompleteCVC     && !isCompleteCVC(cardNum,cardCVC) ) {
         $cardCVCInputEl.addClass(opts.invalidFieldClass);
-        return false;
+        return cancelEvent(e);
       }
-      if ( o.failedLuhn        && !isValidLuhn(cardNum)           ) return false;
+      if ( o.failedLuhn        && !isValidLuhn(cardNum)           ) return cancelEvent(e);
 
-      
+
 
       // If a modifyOnSubmit callback is specified, run it on the value of the
       // cloned field, and insert the result into the hidden field for submission
@@ -90,7 +96,7 @@
       var currentVal = e.target.value;
       var maxLength = 4;
 
-      // Record cursor position so we can return it to the proper position after modifying input 
+      // Record cursor position so we can return it to the proper position after modifying input
       var cursorPosition = this.selectionStart;
 
       if( /[^\d]/.test(currentVal)  ||  currentVal.length > maxLength ) {
@@ -113,10 +119,10 @@
     var prevCardType  = '';
     var failedLuhnChk = false;
 
-    var $evtListenerTarget = $(opts.selectors.inputNumber); 
+    var $evtListenerTarget = $(opts.selectors.inputNumber);
 
     // If a modifyOnSubmit callback is specified, create a visible clone of the field
-    // for the user to interact with, and later during the submit event, execute the 
+    // for the user to interact with, and later during the submit event, execute the
     // provided callback on the field input and insert the result in the hidden field
     if (opts.modifyOnSubmit) {
       var $originalHidden = $evtListenerTarget;
@@ -131,18 +137,18 @@
 
     // Register event handler
     $evtListenerTarget.on('input', evtHandlerInputCardNum);
-    
+
     // Define event handler
     function evtHandlerInputCardNum (e) {
       var currentVal = e.target.value;
       var cardType = getCardType(currentVal);
       var maxLength = getMaxCardNumLength(cardType);
 
-      // Record cursor position so we can return it to the proper position after modifying input 
+      // Record cursor position so we can return it to the proper position after modifying input
       var cursorPosition = this.selectionStart;
 
-      // Modify user input, adding spaces where necessary, and preventing spaces where they shouldn't be 
-      var currentValFormatted = '';  
+      // Modify user input, adding spaces where necessary, and preventing spaces where they shouldn't be
+      var currentValFormatted = '';
       currentVal.split('').forEach(function(char){
         var idx = currentValFormatted.length;
         // Handle American Express cards
@@ -156,12 +162,12 @@
           if( (idx+1) % 5 === 0 && char !== ' ' ) {
             currentValFormatted += ' ';
             if (cursorPosition === idx+1) cursorPosition++;
-          } else if( (idx+1) % 5 !== 0 && char === ' ' ) return; 
-        } 
+          } else if( (idx+1) % 5 !== 0 && char === ' ' ) return;
+        }
         currentValFormatted += char;
       });
-      
-      // If attempted input contains any character that is not 0-9 or whitespace, 
+
+      // If attempted input contains any character that is not 0-9 or whitespace,
       // or is of invalid length, revert current input value to previous value.
       if( /[^\d^\s]/.test(currentVal)  ||  currentVal.length > maxLength ) {
         e.target.value = prevVal;
@@ -169,7 +175,7 @@
 
       // Otherwise, update the input field and prevVal variable with the correctly formatted input
       } else {
-        prevVal = e.target.value = currentValFormatted;  
+        prevVal = e.target.value = currentValFormatted;
         this.setSelectionRange(cursorPosition,cursorPosition); // Re-position cursor appropriately
         // TODO: perform this operation only if class is present
         $(e.target).removeClass(opts.invalidFieldClass);
@@ -200,22 +206,22 @@
         // If of complete length and failed Luhn
         if ( currentVal.length === maxLength && !isValidLuhn(currentVal) ) {
           failedLuhnChk = true;
-          $(e.target).addClass(opts.invalidFieldClass); 
+          $(e.target).addClass(opts.invalidFieldClass);
           opts.onValidityChange && opts.onValidityChange(false); // pass false, signifying invalid Luhn input
-        } 
+        }
 
         // If at max length, must have passed isValidLuhn above.
         // If less than max length, cannot perform isValidLuhn, so cannot be invalid.
-        // In either case, cannot be invalid Luhn. 
+        // In either case, cannot be invalid Luhn.
         // So, if also previously failedLuhnChk, remove failing class and call card validity change callback.
         else if ( failedLuhnChk && currentVal.length <= maxLength ) {
-          $(e.target).removeClass(opts.invalidFieldClass); 
+          $(e.target).removeClass(opts.invalidFieldClass);
           opts.onValidityChange && opts.onValidityChange(true); // pass true, signifying valid or incomplete Luhn input
           failedLuhnChk = false;
         }
 
 
-      }  
+      }
     }
   }
 
@@ -227,7 +233,7 @@
     else if ( isAmex(cardNum)       ) return 'amex';
     else if ( isDiscover(cardNum)   ) return 'discover';
     else return '';
-    
+
     // getCardType helpers. Expects card number n as string, and returns boolean.
     function isVisa       (n) { return n[0] === '4';                                    };
     function isMastercard (n) { return n[0] === '5' &&  n[1] >=   1  && n[1] <=   5;    };
@@ -238,7 +244,7 @@
   function getMaxCardNumLength (cardType) {
     return cardType === 'amex' ? 17 : 19;
   }
-  
+
   function isCompleteCardNum (cardNum) {
     var cardType = getCardType(cardNum);
     var maxLength = getMaxCardNumLength(cardType);
@@ -259,9 +265,9 @@
     var luhnChk=function(a){return function(c){for(var l=c.length,b=1,s=0,v;l;)v=parseInt(c.charAt(--l),10),s+=(b^=1)?a[v]:v;return s&&0===s%10}}([0,2,4,6,8,1,3,5,7,9]);
     cardNum += ''; // Coerce to string
     cardNum = cardNum.replace(/ /g,''); // Remove any spaces
-    return luhnChk(cardNum); 
+    return luhnChk(cardNum);
   }
-  
+
 
 
 })(jQuery);
