@@ -42,7 +42,7 @@
 
   function cancelEvent(e) {
     e.preventDefault();
-    e.stopImmediatePropogation();
+    e.stopImmediatePropagation();
     return false;
   }
 
