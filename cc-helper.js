@@ -42,7 +42,7 @@
 
   function setListenerFormSubmit (opts) {
     // check opts for prevent submit options
-    $(opts.selectors.form).on('submit', evtHandlerFormSubmit);
+    $('body').on('submit', opts.selectors.form, evtHandlerFormSubmit);
 
     function evtHandlerFormSubmit (e) {
       var $cardNumInputEl = opts.modifyOnSubmit ? $('[name="'+clonedFieldName+'"]') : $(opts.selectors.inputNumber);
