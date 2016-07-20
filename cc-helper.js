@@ -223,6 +223,10 @@
 
       }
     }
+
+    // Trigger the input event handler we just registered to ensure proper formatting 
+    // in cases where the browser auto-populates the field on page load
+    $evtListenerTarget.trigger('input');
   }
 
   // Takes a card number as input and returns a string of the card type (empty string if no type detected)
