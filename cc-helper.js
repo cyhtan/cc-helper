@@ -34,13 +34,19 @@
     $(opts.selectors.form).on('submit', evtHandlerFormSubmit);
 
     function evtHandlerFormSubmit (e) {
-      var cardNum = opts.modifyOnSubmit ? $('[name="'+clonedFieldName+'"]')[0].value : $(opts.selectors.inputNumber)[0].value;
+      var $cardNumInputEl = opts.modifyOnSubmit ? $('[name="'+clonedFieldName+'"]') : $(opts.selectors.inputNumber);
+      var cardNum = $cardNumInputEl[0].value;
+      
       var $cardCVCInputEl = $(opts.selectors.inputCVC);
       var cardCVC = $cardCVCInputEl[0].value;
+      
       var o = opts.preventSubmitIf;
       // If any preventSubmit options are enabled, and the corresponding check
       // fails, cancel submission
-      if ( o.incompleteCardNum && !isCompleteCardNum(cardNum)     ) return false;
+      if ( o.incompleteCardNum && !isCompleteCardNum(cardNum)     ) {
+        $cardNumInputEl.addClass(opts.invalidFieldClass);
+        return false;
+      }
       if ( o.incompleteCVC     && !isCompleteCVC(cardNum,cardCVC) ) {
         $cardCVCInputEl.addClass(opts.invalidFieldClass);
         return false;
@@ -154,6 +160,8 @@
       } else {
         prevVal = e.target.value = currentValFormatted;  
         this.setSelectionRange(cursorPosition,cursorPosition); // Re-position cursor appropriately
+        // TODO: perform this operation only if class is present
+        $(e.target).removeClass(opts.invalidFieldClass);
       }
 
 
