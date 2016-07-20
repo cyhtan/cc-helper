@@ -40,6 +40,12 @@
     $(opts.selectors.inputNumber).removeAttr('pattern');
   }
 
+  function cancelEvent(e) {
+    e.preventDefault();
+    e.stopImmediatePropogation();
+    return false;
+  }
+
   function setListenerFormSubmit (opts) {
     // check opts for prevent submit options
     $('body').on('submit', opts.selectors.form, evtHandlerFormSubmit);
@@ -56,13 +62,13 @@
       // fails, cancel submission
       if ( o.incompleteCardNum && !isCompleteCardNum(cardNum)     ) {
         $cardNumInputEl.addClass(opts.invalidFieldClass);
-        return false;
+        return cancelEvent(e);
       }
       if ( o.incompleteCVC     && !isCompleteCVC(cardNum,cardCVC) ) {
         $cardCVCInputEl.addClass(opts.invalidFieldClass);
-        return false;
+        return cancelEvent(e);
       }
-      if ( o.failedLuhn        && !isValidLuhn(cardNum)           ) return false;
+      if ( o.failedLuhn        && !isValidLuhn(cardNum)           ) return cancelEvent(e);
 
       
 
