@@ -119,7 +119,7 @@
     var prevCardType  = '';
     var failedLuhnChk = false;
 
-    var $evtListenerTarget = $(opts.selectors.inputNumber);
+    var $evtListenerTarget = $(opts.selectors.inputNumber).first();
 
     // If a modifyOnSubmit callback is specified, create a visible clone of the field
     // for the user to interact with, and later during the submit event, execute the
