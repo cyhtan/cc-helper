@@ -84,17 +84,22 @@
       var cardCVC = $cardCVCInputEl[0].value;
 
       var o = opts.preventSubmitIf;
+
+      // TODO: Abstract this into an option
+      // Temp fix for HI humanitarian donation page
+      var requireValidation = $('#gateway-authorize_net').attr('checked');
+
       // If any preventSubmit options are enabled, and the corresponding check
       // fails, cancel submission, and display the appropriate error message
-      if ( o.incompleteCardNum && !isCompleteCardNum(cardNum)     ) {
+      if ( requireValidation && o.incompleteCardNum && !isCompleteCardNum(cardNum) ) {
         displayErr( $cardNumInputEl, $('#'+errMsgNumber), opts );
         return cancelEvent(e);
       }
-      if ( o.incompleteCVC     && !isCompleteCVC(cardNum,cardCVC) ) {
+      if ( requireValidation && o.incompleteCVC && !isCompleteCVC(cardNum,cardCVC) ) {
         displayErr( $cardCVCInputEl, $('#'+errMsgCVC), opts );
         return cancelEvent(e);
       }
-      if ( o.failedLuhn        && !isValidLuhn(cardNum)           ) return cancelEvent(e);
+      if ( requireValidation && o.failedLuhn && !isValidLuhn(cardNum) ) return cancelEvent(e);
 
 
 
