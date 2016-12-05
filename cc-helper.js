@@ -15,7 +15,7 @@
         form          : '#card-helper',
         inputNumber   : 'input[name="card-number"]',
         inputCVC      : 'input[name="card-cvc"]',
-        errMsgDisplay : '#card-helper'
+        errMsgDisplay : '', // Default set below to the value of selectors.form
       },
       luhnValidation      : true,
       invalidFieldClass   : 'cch-invalid-number',
@@ -28,6 +28,9 @@
       }
     };
     var opts = $.extend( true, {}, defaultOptions, userOptions );
+
+    // If selectors.errMsgDisplay not specified, default to selectors.form
+    if (opts.selectors.errMsgDisplay === '') opts.selectors.errMsgDisplay = opts.selectors.form;
 
     // Remove pattern attribute if specified (default: false)
     removePatternAttr(opts);
