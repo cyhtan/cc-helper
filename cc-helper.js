@@ -27,7 +27,7 @@
         failedLuhn        : true,
       }
     };
-    var opts = $.extend( {}, defaultOptions, userOptions );
+    var opts = $.extend( true, {}, defaultOptions, userOptions );
 
     // Remove pattern attribute if specified (default: false)
     removePatternAttr(opts);
