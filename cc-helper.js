@@ -1,24 +1,25 @@
 (function($){
 
-  // Used as field names
-  var clonedFieldName        = 'cch_cc_num_clone';
+  // Used as name attribute for cloned card number field
+  var clonedFieldName        = 'cch_cloned_field_card_num';
+
   // Used as IDs
-  var errMsgDisplayContainer = 'cch-err-msg-container';
-  var errMsgNumber           = 'cch-err-num';
-  var errMsgCVC              = 'cch-err-cvc';
+  var errMsgDisplayContainer = 'cch-err-container';
+  var errMsgNumber           = 'cch-err-msg-num';
+  var errMsgCVC              = 'cch-err-msg-cvc';
 
   // Declaring global
   CardHelper = function (userOptions) {
 
     var defaultOptions = {
       selectors : {
-        form          : '#card-helper',
-        inputNumber   : 'input[name="card-number"]',
-        inputCVC      : 'input[name="card-cvc"]',
-        errMsgDisplay : '', // Default set below to the value of selectors.form
+        form            : '#cch-form',
+        inputCardNumber : 'input[name="card-number"]',
+        inputCVC        : 'input[name="card-cvc"]',
+        errMsgDisplay   : '', // Default set below to the value of selectors.form
       },
       luhnValidation      : true,
-      invalidFieldClass   : 'cch-invalid-number',
+      invalidFieldClass   : 'cch-invalid-field',
       modifyOnSubmit      : false,
       removePatternAttr   : false,
       preventSubmitIf     : {
@@ -66,7 +67,7 @@
   function removePatternAttr(opts) {
     if (!opts.removePatternAttr) return;
     $(opts.selectors.inputCVC).removeAttr('pattern');
-    $(opts.selectors.inputNumber).removeAttr('pattern');
+    $(opts.selectors.inputCardNumber).removeAttr('pattern');
   }
 
   function cancelEvent(e) {
@@ -80,7 +81,7 @@
     $('body').on('submit', opts.selectors.form, evtHandlerFormSubmit);
 
     function evtHandlerFormSubmit (e) {
-      var $cardNumInputEl = opts.modifyOnSubmit ? $('[name="'+clonedFieldName+'"]') : $(opts.selectors.inputNumber);
+      var $cardNumInputEl = opts.modifyOnSubmit ? $('[name="'+clonedFieldName+'"]') : $(opts.selectors.inputCardNumber);
       var cardNum = $cardNumInputEl[0].value;
 
       var $cardCVCInputEl = $(opts.selectors.inputCVC);
@@ -104,7 +105,7 @@
       // If a modifyOnSubmit callback is specified, run it on the value of the
       // cloned field, and insert the result into the hidden field for submission
       if (opts.modifyOnSubmit) {
-        var $originalHidden = $(opts.selectors.inputNumber);
+        var $originalHidden = $(opts.selectors.inputCardNumber);
         var $clonedVisible  = $('[name="'+clonedFieldName+'"]');
 
         $originalHidden[0].value = opts.modifyOnSubmit( $clonedVisible[0].value );
@@ -148,7 +149,7 @@
     var prevCardType  = '';
     var failedLuhnChk = false;
 
-    var $evtListenerTarget = $(opts.selectors.inputNumber).first();
+    var $evtListenerTarget = $(opts.selectors.inputCardNumber).first();
 
     // If a modifyOnSubmit callback is specified, create a visible clone of the field
     // for the user to interact with, and later during the submit event, execute the
@@ -236,7 +237,7 @@
         if ( currentVal.length === maxLength && !isValidLuhn(currentVal) ) {
           failedLuhnChk = true;
           displayErr( $(e.target), $('#'+errMsgNumber), opts );
-          opts.onValidityChange && opts.onValidityChange(false); // pass false, signifying invalid Luhn input
+          opts.onLuhnValidityChange && opts.onLuhnValidityChange(false); // pass false, signifying invalid Luhn input
         }
 
         // If at max length, must have passed isValidLuhn above.
@@ -246,7 +247,7 @@
         else if ( failedLuhnChk && currentVal.length <= maxLength ) {
           failedLuhnChk = false;
           hideErr( $(e.target), $('#'+errMsgNumber), opts );
-          opts.onValidityChange && opts.onValidityChange(true); // pass true, signifying valid or incomplete Luhn input
+          opts.onLuhnValidityChange && opts.onLuhnValidityChange(true); // pass true, signifying valid or incomplete Luhn input
         }
 
 
