@@ -113,6 +113,15 @@ var card = new CardHelper({
    */
   onCardTypeChange : false,
 
+  /*
+   *  If given a callback function, the function will be invoked instead of
+   *  setting the submit event. Default submit event listener is placed on
+   *  `body`. It may be desirable to place the submit event on another
+   *  element, such as the form itself, to prevent propagation of other
+   *  form submit events. It will be passed the options and the submit
+   *  event handler callback.
+   */
+  setListenerFormSubmit : false
 
   /* 
    *  Whether or not to remove an existing pattern attribute

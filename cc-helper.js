@@ -26,7 +26,8 @@
         incompleteCardNum : true,
         incompleteCVC     : true,
         failedLuhn        : true,
-      }
+      },
+      setListenerFormSubmit : false
     };
     var opts = $.extend( true, {}, defaultOptions, userOptions );
 
@@ -78,7 +79,12 @@
 
   function setListenerFormSubmit (opts) {
     // check opts for prevent submit options
-    $('body').on('submit', opts.selectors.form, evtHandlerFormSubmit);
+
+    if (opts.setListenerFormSubmit) {
+      opts.setListenerFormSubmit(opts, evtHandlerFormSubmit);
+    } else {
+      $('body').on('submit', opts.selectors.form, evtHandlerFormSubmit);
+    }
 
     function evtHandlerFormSubmit (e) {
       var $cardNumInputEl = opts.modifyOnSubmit ? $('[name="'+clonedFieldName+'"]') : $(opts.selectors.inputCardNumber);
