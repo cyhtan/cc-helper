@@ -123,6 +123,15 @@ var card = new CardHelper({
    */
   setListenerFormSubmit : false
 
+  /*
+   *  If given a callback function, the function will be invoked after all
+   *  checks are run. It will be passed true or false indicating either that
+   *  all checks have passed or that at least one check has failed.
+   */
+  afterSubmit : false
+
+
+
   /* 
    *  Whether or not to remove an existing pattern attribute
    *  from inputCardNumber and inputCVC to prevent conflicts.

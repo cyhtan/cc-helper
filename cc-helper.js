@@ -27,7 +27,8 @@
         incompleteCVC     : true,
         failedLuhn        : true,
       },
-      setListenerFormSubmit : false
+      setListenerFormSubmit : false,
+      afterSubmit : false
     };
     var opts = $.extend( true, {}, defaultOptions, userOptions );
 
@@ -96,17 +97,21 @@
       var o = opts.preventSubmitIf;
       // If any preventSubmit options are enabled, and the corresponding check
       // fails, cancel submission, and display the appropriate error message
+      var ret = true;
       if ( o.incompleteCardNum && !isCompleteCardNum(cardNum)     ) {
         displayErr( $cardNumInputEl, $('#'+errMsgNumber), opts );
-        return cancelEvent(e);
-      }
-      if ( o.incompleteCVC     && !isCompleteCVC(cardNum,cardCVC) ) {
+        ret = cancelEvent(e);
+      } else if ( o.incompleteCVC     && !isCompleteCVC(cardNum,cardCVC) ) {
         displayErr( $cardCVCInputEl, $('#'+errMsgCVC), opts );
-        return cancelEvent(e);
+        ret = cancelEvent(e);
+      } else if ( o.failedLuhn        && !isValidLuhn(cardNum)           ) {
+        ret = cancelEvent(e);
       }
-      if ( o.failedLuhn        && !isValidLuhn(cardNum)           ) return cancelEvent(e);
 
-
+      // call afterSubmit callback if present
+      if (opts.afterSubmit) {
+        opts.afterSubmit(ret);
+      }
 
       // If a modifyOnSubmit callback is specified, run it on the value of the
       // cloned field, and insert the result into the hidden field for submission
